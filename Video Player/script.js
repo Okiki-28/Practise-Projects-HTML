@@ -13,13 +13,28 @@ playPauseBtn = container.querySelector(".play-pause i"),
 speedBtn = container.querySelector(".playback-speed span"),
 speedOptions = container.querySelector(".speed-options"),
 picInPicBtn = container.querySelector(".pic-in-pic span"),
+alertBox = container.querySelector(".container-alert"),
+alertKey = container.querySelector(".alert-key"),
+alertValue = container.querySelector(".alert-value"),
 fullscreenBTN = container.querySelector(".fullscreen i");
 
 let timer;
+let alertTimer;
 let skip;
+let value;
 let initVolume = 0.5;
 let volumeClass = volumeBtn.classList[1];
 mainVideo.volume = 0.5;
+
+const displayAlert = (k, v)=>{
+    clearTimeout(alertTimer);
+    alertKey.innerText = k;
+    alertValue.innerText = v;
+    alertBox.classList.add("active");
+    alertTimer = setTimeout(()=>{
+        alertBox.classList.remove("active");
+    }, 2000)
+}
 
 const hideControls = ()=>{
     cover.addEventListener("mouseenter", ()=>{
@@ -127,25 +142,29 @@ volumeBtn.addEventListener("click", ()=>{
     volumeSlider.value = mainVideo.volume;
 });
 
-volumeSlider.addEventListener("input", e=>{
-    mainVideo.volume = e.target.value;
-    if (e.target.value == 0) {
+const volBtnSelector = ()=>{
+    mainVideo.volume = volumeSlider.value;
+    if (volumeSlider.value == 0) {
         volumeBtn.classList.replace("fa-volume-high", "fa-volume-xmark")
         volumeBtn.classList.replace("fa-volume", "fa-volume-xmark")
         volumeBtn.classList.replace("fa-volume-low", "fa-volume-xmark")
-    } else if (e.target.value < 0.25) {
+    } else if (volumeSlider.value < 0.25) {
         volumeBtn.classList.replace("fa-volume-xmark", "fa-volume-low")
         volumeBtn.classList.replace("fa-volume", "fa-volume-low")
         volumeBtn.classList.replace("fa-volume-high", "fa-volume-low")
-    } else if (e.target.value < 0.75) {
+    } else if (volumeSlider.value < 0.85) {
         volumeBtn.classList.replace("fa-volume-low", "fa-volume")
         volumeBtn.classList.replace("fa-volume-high", "fa-volume")
         volumeBtn.classList.replace("fa-volume-xmark", "fa-volume")
-    } else if (e.target.value > 0.75) {
+    } else if (volumeSlider.value > 0.85) {
         volumeBtn.classList.replace("fa-volume-xmark", "fa-volume-high")
         volumeBtn.classList.replace("fa-volume-low", "fa-volume-high")
         volumeBtn.classList.replace("fa-volume", "fa-volume-high")
     }
+}
+
+volumeSlider.addEventListener("input", ()=>{
+    volBtnSelector()
 });
 
 speedBtn.addEventListener("click", ()=>{
@@ -211,6 +230,34 @@ document.addEventListener("keydown", e=>{
             break
         case "f":
             fullscreenFnc()
+            break
+        case "ArrowUp":
+            value = mainVideo.volume
+            if (value < 1) {
+                if ((Math.round(10*value))%2 == 0) {
+                    value += 0.2
+                } else {
+                    value += 0.1
+                }
+            }
+            mainVideo.volume = value;
+            volumeSlider.value = mainVideo.volume;
+            displayAlert("Volume", `${Math.round(10*value)*10}%`);
+            volBtnSelector();
+            break;
+        case "ArrowDown":
+            value = mainVideo.volume
+            if (value > 0) {
+                if ((Math.round(10*value))%2 == 0) {
+                    value -= 0.2
+                } else {
+                    value -= 0.1
+                }
+            }
+            mainVideo.volume = value;
+            volumeSlider.value = mainVideo.volume;
+            displayAlert("Volume", `${Math.round(10*value)*10}%`);
+            volBtnSelector();
             break
         default:
             break
